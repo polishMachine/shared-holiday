@@ -3,7 +3,7 @@ package dev.machine.polish.helidon.sharedholiday.controllers;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.google.common.base.Preconditions;
+import org.apache.commons.lang3.Validate;
 
 import dev.machine.polish.helidon.sharedholiday.shared.SharedHolidayRequest;
 import dev.machine.polish.helidon.sharedholiday.shared.SharedHolidaySearchProcessor;
@@ -20,7 +20,7 @@ public class SharedHolidayController implements Service {
     private final SharedHolidaySearchProcessor searchProcessor;
 
     public SharedHolidayController(SharedHolidaySearchProcessor sharedHolidaySearchProcessor) {
-        Preconditions.checkNotNull(sharedHolidaySearchProcessor);
+        Validate.notNull(sharedHolidaySearchProcessor);
         searchProcessor = sharedHolidaySearchProcessor;
     }
 
