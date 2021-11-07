@@ -88,15 +88,11 @@ public final class Main {
                 .addLiveness(HealthChecks.deadlockCheck(), HealthChecks.heapMemoryCheck())   // Adds a convenient set of checks
                 .build();
 
-        String apiPathFormat = config.get("holidayDataService.pathFormat").asString().orElseThrow(() -> new IllegalStateException("holidays provider API pathFormat is not configured"));
-        HolidayDataProvider holidayDataProvider = new HolidayDataProvider(holidaysWebClient, apiPathFormat);
-        
-        SharedHolidaySearchProcessor searchProcessor = new SharedHolidaySearchProcessor(
-                config.get("maxFollowingYearsChecked").asInt().orElse(2), holidayDataProvider);
+        SharedHolidayController sharedHolidayController = createSharedHolidayController(config, holidaysWebClient);
 
         return Routing.builder()
                 .register(health)                   // Health at "/health"
-                .register("/sharedholiday/v1", new SharedHolidayController(searchProcessor))
+                .register("/sharedholiday/v1", sharedHolidayController)
                 .error(JacksonRuntimeException.class, (req, res, ex) -> {
                     if (ex.getCause() instanceof UnrecognizedPropertyException) {
                         UnrecognizedPropertyException upe = (UnrecognizedPropertyException)ex.getCause();
@@ -118,6 +114,16 @@ public final class Main {
                     }
                 })
                 .build();
+    }
+
+    private static SharedHolidayController createSharedHolidayController(Config config, WebClient holidaysWebClient) {
+        String apiPathFormat = config.get("holidayDataService.pathFormat").asString().orElseThrow(() -> new IllegalStateException("holidays provider API pathFormat is not configured"));
+        HolidayDataProvider holidayDataProvider = new HolidayDataProvider(holidaysWebClient, apiPathFormat);
+        
+        SharedHolidaySearchProcessor searchProcessor = new SharedHolidaySearchProcessor(
+                config.get("maxFollowingYearsChecked").asInt().orElse(2), holidayDataProvider);
+
+        return new SharedHolidayController(searchProcessor);
     }
 
     private static void setupLogging() throws IOException {
