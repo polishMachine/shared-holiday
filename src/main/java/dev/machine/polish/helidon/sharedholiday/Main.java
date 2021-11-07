@@ -84,11 +84,9 @@ public final class Main {
      */
     private static Routing createRouting(Config config, WebClient holidaysWebClient) {
         Validate.notNull(holidaysWebClient);
-
-        MetricsSupport metrics = MetricsSupport.create();
         
         HealthSupport health = HealthSupport.builder()
-                .addLiveness(HealthChecks.healthChecks())   // Adds a convenient set of checks
+                .addLiveness(HealthChecks.deadlockCheck(), HealthChecks.heapMemoryCheck())   // Adds a convenient set of checks
                 .build();
 
         String apiPathFormat = config.get("holidayDataService.pathFormat").asString().orElseThrow(() -> new IllegalStateException("holidays provider API pathFormat is not configured"));
@@ -99,7 +97,6 @@ public final class Main {
 
         return Routing.builder()
                 .register(health)                   // Health at "/health"
-                .register(metrics)                  // Metrics at "/metrics"
                 .register("/sharedholiday/v1", new SharedHolidayController(searchProcessor))
                 .error(JacksonRuntimeException.class, (req, res, ex) -> {
                     if (ex.getCause() instanceof UnrecognizedPropertyException) {
