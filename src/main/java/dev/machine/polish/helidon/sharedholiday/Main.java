@@ -88,6 +88,7 @@ public final class Main {
         return Routing.builder()
                 .register(health)                   // Health at "/health"
                 .register(metrics)                  // Metrics at "/metrics"
+                .register("/sharedholiday/v1", new SharedHolidayController())
                 .build();
     }
 
