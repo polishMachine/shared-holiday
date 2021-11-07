@@ -17,7 +17,7 @@ public class HolidayDataProvider implements IHolidaysDataProvider {
         // mock data
         List<HolidayEntry> holidays = List.of(
             new HolidayEntry(LocalDate.now().plusWeeks(countryCode.hashCode()), "rather not shared", "cc"), 
-            new HolidayEntry(LocalDate.now().plusWeeks(countryCode.hashCode()), "shared", "cc"));
+            new HolidayEntry(LocalDate.now(), "shared", "cc"));
 
         return Single.just(holidays);
     }
