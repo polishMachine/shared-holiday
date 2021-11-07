@@ -2,6 +2,9 @@ package dev.machine.polish.helidon.sharedholiday.shared;
 
 import java.time.LocalDate;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateDeserializer;
+
 public class SharedHolidayRequest {
     
     private LocalDate date;
@@ -11,6 +14,7 @@ public class SharedHolidayRequest {
     public SharedHolidayRequest() {
     }
 
+    @JsonDeserialize(using = LocalDateDeserializer.class)
     public LocalDate getDate() {
         return date;
     }
