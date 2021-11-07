@@ -2,19 +2,18 @@ package dev.machine.polish.helidon.sharedholiday.holidays;
 
 import java.time.LocalDate;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateDeserializer;
+
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class HolidayEntry {
     
+    @JsonDeserialize(using = LocalDateDeserializer.class)
     private LocalDate date;
     private String localName;
-    private String countryCode;
     
     public HolidayEntry() {
-    }
-
-    public HolidayEntry(LocalDate date, String localName, String countryCode) {
-        this.date = date;
-        this.localName = localName;
-        this.countryCode = countryCode;
     }
 
     public LocalDate getDate() {
@@ -23,9 +22,5 @@ public class HolidayEntry {
 
     public String getLocalName() {
         return localName;
-    }
-
-    public String getCountryCode() {
-        return countryCode;
     }
 }
