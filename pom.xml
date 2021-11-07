@@ -32,6 +32,18 @@
             <groupId>io.helidon.webserver</groupId>
             <artifactId>helidon-webserver</artifactId>
         </dependency>
+        <dependency>
+            <groupId>io.helidon.security</groupId>
+            <artifactId>helidon-security</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.helidon.security.providers</groupId>
+            <artifactId>helidon-security-providers-http-auth</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.helidon.security.integration</groupId>
+            <artifactId>helidon-security-integration-webserver</artifactId>
+        </dependency>
        <dependency>
             <groupId>io.helidon.media</groupId>
             <artifactId>helidon-media-jackson</artifactId>
