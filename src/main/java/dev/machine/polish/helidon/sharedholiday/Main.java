@@ -21,7 +21,6 @@ import io.helidon.health.HealthSupport;
 import io.helidon.health.checks.HealthChecks;
 import io.helidon.media.jackson.JacksonRuntimeException;
 import io.helidon.media.jackson.JacksonSupport;
-import io.helidon.metrics.MetricsSupport;
 import io.helidon.webclient.WebClient;
 import io.helidon.webserver.Routing;
 import io.helidon.webserver.WebServer;
