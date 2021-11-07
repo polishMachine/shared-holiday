@@ -1,4 +1,4 @@
-package dev.machine.polish.helidon.sharedholiday.provider;
+package dev.machine.polish.helidon.sharedholiday.holidays;
 
 import java.time.LocalDate;
 
@@ -9,6 +9,12 @@ public class HolidayEntry {
     private String countryCode;
     
     public HolidayEntry() {
+    }
+
+    public HolidayEntry(LocalDate date, String localName, String countryCode) {
+        this.date = date;
+        this.localName = localName;
+        this.countryCode = countryCode;
     }
 
     public LocalDate getDate() {
