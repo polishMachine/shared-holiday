@@ -3,12 +3,18 @@ package dev.machine.polish.helidon.sharedholiday;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.logging.Level;
 import java.util.logging.LogManager;
+import java.util.logging.Logger;
+
+import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
 
 import dev.machine.polish.helidon.sharedholiday.controllers.SharedHolidayController;
+import io.helidon.common.http.Http;
 import io.helidon.config.Config;
 import io.helidon.health.HealthSupport;
 import io.helidon.health.checks.HealthChecks;
+import io.helidon.media.jackson.JacksonRuntimeException;
 import io.helidon.media.jackson.JacksonSupport;
 import io.helidon.metrics.MetricsSupport;
 import io.helidon.webserver.Routing;
@@ -57,7 +63,7 @@ public final class Main {
         server.start()
                 .thenAccept(ws -> {
                     System.out.println(
-                            "WEB server is up! http://localhost:" + ws.port() + "/greet");
+                            "WEB server is up! http://localhost:" + ws.port() + "/sharedholiday/v1");
                     ws.whenShutdown().thenRun(()
                             -> System.out.println("WEB server is DOWN. Good bye!"));
                 })
@@ -89,6 +95,22 @@ public final class Main {
                 .register(health)                   // Health at "/health"
                 .register(metrics)                  // Metrics at "/metrics"
                 .register("/sharedholiday/v1", new SharedHolidayController())
+                .error(JacksonRuntimeException.class, (req, res, ex) -> {
+                    res.status(Http.Status.BAD_REQUEST_400);
+                    if (ex.getCause() instanceof UnrecognizedPropertyException) {
+                        UnrecognizedPropertyException upe = (UnrecognizedPropertyException)ex.getCause();
+                        res.send(String.format("Unable to parse request. Unrecognized property: %s. Expected properties: %s", 
+                            upe.getPropertyName(), upe.getKnownPropertyIds()));
+                        Logger.getLogger(Main.class.getName()).log(Level.FINE,
+                            String.format("request content deserialization error, caused by unrecognized property: %s", upe.getPropertyName()));
+                    } else {
+                        Logger.getLogger(Main.class.getName()).log(Level.SEVERE,
+                            "processing request failed",
+                            ex.getCause());
+                        res.status(Http.Status.INTERNAL_SERVER_ERROR_500);
+                        res.send("Unable to handle request.");
+                    }
+                })
                 .build();
     }
 
