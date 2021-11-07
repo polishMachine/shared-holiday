@@ -43,12 +43,8 @@ public class MainTest {
     }
 
     @Test
-    public void testHelloWorld() throws Exception {
+    public void testHealth() throws Exception {
         webClient.get().path("/health").request()
-                .thenAccept(response -> Assertions.assertEquals(200, response.status().code())).toCompletableFuture()
-                .get();
-
-        webClient.get().path("/metrics").request()
                 .thenAccept(response -> Assertions.assertEquals(200, response.status().code())).toCompletableFuture()
                 .get();
     }
