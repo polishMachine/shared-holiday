@@ -1,3 +1,9 @@
 server:
   port: 8080
   host: 0.0.0.0
+
+holidayDataService:
+  baseURI: "https://date.nager.at/api/v3/"
+  pathFormat: "/publicholidays/%04d/%.2s"
+
+maxFollowingYearsChecked: 2

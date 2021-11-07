@@ -9,6 +9,8 @@ import java.util.logging.Logger;
 
 import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
 
+import org.apache.commons.lang3.Validate;
+
 import dev.machine.polish.helidon.sharedholiday.controllers.SharedHolidayController;
 import dev.machine.polish.helidon.sharedholiday.holidays.provider.HolidayDataProvider;
 import dev.machine.polish.helidon.sharedholiday.shared.SharedHolidaySearchProcessor;
@@ -19,25 +21,15 @@ import io.helidon.health.checks.HealthChecks;
 import io.helidon.media.jackson.JacksonRuntimeException;
 import io.helidon.media.jackson.JacksonSupport;
 import io.helidon.metrics.MetricsSupport;
+import io.helidon.webclient.WebClient;
 import io.helidon.webserver.Routing;
 import io.helidon.webserver.WebServer;
 
-/**
- * The application main class.
- */
 public final class Main {
 
-    /**
-     * Cannot be instantiated.
-     */
     private Main() {
     }
 
-    /**
-     * Application main entry point.
-     * @param args command line arguments.
-     * @throws IOException if there are problems reading logging properties
-     */
     public static void main(final String[] args) throws IOException {
         startServer();
     }
@@ -48,20 +40,24 @@ public final class Main {
      * @throws IOException if there are problems reading logging properties
      */
     static WebServer startServer() throws IOException {
-        // load logging configuration
         setupLogging();
 
         // By default this will pick up application.yaml from the classpath
         Config config = Config.create();
 
-        // Build server with JSONP support
-        WebServer server = WebServer.builder(createRouting(config))
+        // Build WebClient with Jackson support
+        WebClient holidaysWebClient = WebClient.builder()
+                .baseUri(config.get("holidayDataService.baseURI").asString()
+                            .orElseThrow(() -> new IllegalStateException("holidays provider base URI is not configured")))
+                .addReader(JacksonSupport.reader())
+                .build();
+
+
+        WebServer server = WebServer.builder(createRouting(config, holidaysWebClient))
                 .config(config.get("server"))
                 .addMediaSupport(JacksonSupport.create())
                 .build();
 
-        // Try to start the server. If successful, print some info and arrange to
-        // print a message at shutdown. If unsuccessful, print the exception.
         server.start()
                 .thenAccept(ws -> {
                     System.out.println(
@@ -76,7 +72,6 @@ public final class Main {
                 });
 
         // Server threads are not daemon. No need to block. Just react.
-
         return server;
     }
 
@@ -86,7 +81,8 @@ public final class Main {
      * @return routing configured with JSON support, a health check, and a service
      * @param config configuration of this server
      */
-    private static Routing createRouting(Config config) {
+    private static Routing createRouting(Config config, WebClient holidaysWebClient) {
+        Validate.notNull(holidaysWebClient);
 
         MetricsSupport metrics = MetricsSupport.create();
         
@@ -94,8 +90,11 @@ public final class Main {
                 .addLiveness(HealthChecks.healthChecks())   // Adds a convenient set of checks
                 .build();
 
-        HolidayDataProvider holidayDataProvider = new HolidayDataProvider();
-        SharedHolidaySearchProcessor searchProcessor = new SharedHolidaySearchProcessor(2, holidayDataProvider);
+        String apiPathFormat = config.get("holidayDataService.pathFormat").asString().orElseThrow(() -> new IllegalStateException("holidays provider API pathFormat is not configured"));
+        HolidayDataProvider holidayDataProvider = new HolidayDataProvider(holidaysWebClient, apiPathFormat);
+        
+        SharedHolidaySearchProcessor searchProcessor = new SharedHolidaySearchProcessor(
+                config.get("maxFollowingYearsChecked").asInt().orElse(2), holidayDataProvider);
 
         return Routing.builder()
                 .register(health)                   // Health at "/health"
@@ -120,9 +119,6 @@ public final class Main {
                 .build();
     }
 
-    /**
-     * Configure logging from logging.properties file.
-     */
     private static void setupLogging() throws IOException {
         try (InputStream is = Main.class.getResourceAsStream("/logging.properties")) {
             LogManager.getLogManager().readConfiguration(is);
