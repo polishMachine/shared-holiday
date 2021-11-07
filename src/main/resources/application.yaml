@@ -7,3 +7,17 @@ holidayDataService:
   pathFormat: "/publicholidays/%04d/%.2s"
 
 maxFollowingYearsChecked: 2
+
+apikey: "password"
+
+security:
+  providers:
+  - http-basic-auth:
+      realm: "shared-holiday"
+      users:
+      - login: ""
+        password: ${apikey}
+        roles: ["user"]
+security.web-server:
+  defaults:
+    authenticate: true
