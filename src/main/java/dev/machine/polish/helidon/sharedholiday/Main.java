@@ -10,6 +10,7 @@ import java.util.logging.Logger;
 import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
 
 import dev.machine.polish.helidon.sharedholiday.controllers.SharedHolidayController;
+import dev.machine.polish.helidon.sharedholiday.shared.SharedHolidaySearchProcessor;
 import io.helidon.common.http.Http;
 import io.helidon.config.Config;
 import io.helidon.health.HealthSupport;
@@ -85,16 +86,19 @@ public final class Main {
      * @param config configuration of this server
      */
     private static Routing createRouting(Config config) {
+
         MetricsSupport metrics = MetricsSupport.create();
         
         HealthSupport health = HealthSupport.builder()
                 .addLiveness(HealthChecks.healthChecks())   // Adds a convenient set of checks
                 .build();
 
+        SharedHolidaySearchProcessor searchProcessor = new SharedHolidaySearchProcessor();
+
         return Routing.builder()
                 .register(health)                   // Health at "/health"
                 .register(metrics)                  // Metrics at "/metrics"
-                .register("/sharedholiday/v1", new SharedHolidayController())
+                .register("/sharedholiday/v1", new SharedHolidayController(searchProcessor))
                 .error(JacksonRuntimeException.class, (req, res, ex) -> {
                     res.status(Http.Status.BAD_REQUEST_400);
                     if (ex.getCause() instanceof UnrecognizedPropertyException) {
