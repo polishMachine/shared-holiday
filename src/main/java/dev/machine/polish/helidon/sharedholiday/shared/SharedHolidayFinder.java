@@ -15,7 +15,7 @@ import org.apache.commons.lang3.tuple.Pair;
 
 import dev.machine.polish.helidon.sharedholiday.holidays.HolidayEntry;
 
-public class SharedHolidayFinder {
+class SharedHolidayFinder {
 
     private static final Logger LOGGER = Logger.getLogger(SharedHolidayFinder.class.getName());
     
