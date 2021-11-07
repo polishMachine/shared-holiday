@@ -1,17 +1,14 @@
 package dev.machine.polish.helidon.sharedholiday.controllers;
 
-import io.helidon.webserver.Routing.Rules;
-
-import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.google.common.base.Preconditions;
 
 import dev.machine.polish.helidon.sharedholiday.shared.SharedHolidayRequest;
-import dev.machine.polish.helidon.sharedholiday.shared.SharedHolidayResponse;
 import dev.machine.polish.helidon.sharedholiday.shared.SharedHolidaySearchProcessor;
 import io.helidon.webserver.Handler;
+import io.helidon.webserver.Routing.Rules;
 import io.helidon.webserver.ServerRequest;
 import io.helidon.webserver.ServerResponse;
 import io.helidon.webserver.Service;
