@@ -21,6 +21,7 @@ import io.helidon.health.HealthSupport;
 import io.helidon.health.checks.HealthChecks;
 import io.helidon.media.jackson.JacksonRuntimeException;
 import io.helidon.media.jackson.JacksonSupport;
+import io.helidon.security.integration.webserver.WebSecurity;
 import io.helidon.webclient.WebClient;
 import io.helidon.webserver.Routing;
 import io.helidon.webserver.WebServer;
@@ -83,6 +84,8 @@ public final class Main {
      */
     private static Routing createRouting(Config config, WebClient holidaysWebClient) {
         Validate.notNull(holidaysWebClient);
+
+        WebSecurity webSecurity = WebSecurity.create(config.get("security"));
         
         HealthSupport health = HealthSupport.builder()
                 .addLiveness(HealthChecks.deadlockCheck(), HealthChecks.heapMemoryCheck())   // Adds a convenient set of checks
@@ -91,6 +94,7 @@ public final class Main {
         SharedHolidayController sharedHolidayController = createSharedHolidayController(config, holidaysWebClient);
 
         return Routing.builder()
+                .register(webSecurity)
                 .register(health)                   // Health at "/health"
                 .register("/sharedholiday/v1", sharedHolidayController)
                 .error(JacksonRuntimeException.class, (req, res, ex) -> {
