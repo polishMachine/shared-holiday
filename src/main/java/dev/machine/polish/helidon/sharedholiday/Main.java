@@ -11,6 +11,7 @@ import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
 
 import org.apache.commons.lang3.Validate;
 
+import dev.machine.polish.helidon.sharedholiday.controllers.ErrorResponse;
 import dev.machine.polish.helidon.sharedholiday.controllers.SharedHolidayController;
 import dev.machine.polish.helidon.sharedholiday.holidays.provider.HolidayDataProvider;
 import dev.machine.polish.helidon.sharedholiday.shared.SharedHolidaySearchProcessor;
@@ -101,19 +102,23 @@ public final class Main {
                 .register(metrics)                  // Metrics at "/metrics"
                 .register("/sharedholiday/v1", new SharedHolidayController(searchProcessor))
                 .error(JacksonRuntimeException.class, (req, res, ex) -> {
-                    res.status(Http.Status.BAD_REQUEST_400);
                     if (ex.getCause() instanceof UnrecognizedPropertyException) {
                         UnrecognizedPropertyException upe = (UnrecognizedPropertyException)ex.getCause();
-                        res.send(String.format("Unable to parse request. Unrecognized property: %s. Expected properties: %s", 
-                            upe.getPropertyName(), upe.getKnownPropertyIds()));
+                        
                         Logger.getLogger(Main.class.getName()).log(Level.FINE,
-                            String.format("request content deserialization error, caused by unrecognized property: %s", upe.getPropertyName()));
+                        String.format("request content deserialization error, caused by unrecognized property: %s", upe.getPropertyName()));
+                        
+                        res.status(Http.Status.BAD_REQUEST_400);
+                        res.send(new ErrorResponse(
+                                String.format("Unable to parse request. Unrecognized property: %s. Expected properties: %s", 
+                                        upe.getPropertyName(), upe.getKnownPropertyIds())));
                     } else {
                         Logger.getLogger(Main.class.getName()).log(Level.SEVERE,
                             "processing request failed",
                             ex.getCause());
+                        
                         res.status(Http.Status.INTERNAL_SERVER_ERROR_500);
-                        res.send("Unable to handle request.");
+                        res.send(new ErrorResponse("Unable to handle request."));
                     }
                 })
                 .build();
