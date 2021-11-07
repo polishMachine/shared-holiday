@@ -24,6 +24,7 @@
 
 # VS Code files
 *.prefs
+.vscode/
 
 # build
 *.classpath
