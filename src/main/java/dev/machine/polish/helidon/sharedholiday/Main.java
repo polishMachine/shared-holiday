@@ -5,10 +5,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.logging.LogManager;
 
+import dev.machine.polish.helidon.sharedholiday.controllers.SharedHolidayController;
 import io.helidon.config.Config;
 import io.helidon.health.HealthSupport;
 import io.helidon.health.checks.HealthChecks;
-import io.helidon.media.jsonp.JsonpSupport;
+import io.helidon.media.jackson.JacksonSupport;
 import io.helidon.metrics.MetricsSupport;
 import io.helidon.webserver.Routing;
 import io.helidon.webserver.WebServer;
@@ -48,7 +49,7 @@ public final class Main {
         // Build server with JSONP support
         WebServer server = WebServer.builder(createRouting(config))
                 .config(config.get("server"))
-                .addMediaSupport(JsonpSupport.create())
+                .addMediaSupport(JacksonSupport.create())
                 .build();
 
         // Try to start the server. If successful, print some info and arrange to
