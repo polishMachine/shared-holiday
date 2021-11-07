@@ -8,6 +8,7 @@ import org.apache.commons.lang3.Validate;
 import dev.machine.polish.helidon.sharedholiday.shared.SharedHolidayRequest;
 import dev.machine.polish.helidon.sharedholiday.shared.SharedHolidaySearchProcessor;
 import io.helidon.common.http.Http;
+import io.helidon.security.integration.webserver.WebSecurity;
 import io.helidon.webclient.WebClientException;
 import io.helidon.webserver.Handler;
 import io.helidon.webserver.Routing.Rules;
@@ -28,7 +29,7 @@ public class SharedHolidayController implements Service {
 
     @Override
     public void update(Rules rules) {
-        rules.get("/", Handler.create(SharedHolidayRequest.class, this::handleGet));
+        rules.get("/", WebSecurity.rolesAllowed("user"), Handler.create(SharedHolidayRequest.class, this::handleGet));
     }
 
     public void handleGet(ServerRequest req, ServerResponse res, SharedHolidayRequest reqContent) {
