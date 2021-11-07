@@ -5,6 +5,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import dev.machine.polish.helidon.sharedholiday.holidays.IHolidaysDataProvider;
+import io.helidon.common.reactive.CompletionAwaitable;
 import io.helidon.common.reactive.Single;
 
 public class SharedHolidaySearchProcessor {
@@ -19,7 +20,7 @@ public class SharedHolidaySearchProcessor {
         this.holidaysProvider = holidaysProvider;
     }
 
-    public CompletionStage<SharedHolidayResponse> searchFor(SharedHolidayRequest reqData) {
+    public CompletionAwaitable<SharedHolidayResponse> searchFor(SharedHolidayRequest reqData) {
         LOGGER.log(Level.FINER, "scheduling request processing");
 
         return Single.just(new SharedHolidayFinder(reqData, maxComingYearsChecked))
@@ -27,6 +28,9 @@ public class SharedHolidaySearchProcessor {
                 .thenApply(SharedHolidayFinder::createResponse);
     }
 
+    /**
+     * an iteration attempts to find shared holiday in certain year
+     */
     private CompletionStage<SharedHolidayFinder> searchIterationSteps(SharedHolidayFinder finder) {
         return Single.just(finder)
                 .thenCombine(
@@ -47,8 +51,7 @@ public class SharedHolidaySearchProcessor {
             finder.prepareForSearchInNextYear();
             return searchIterationSteps(finder);
         }
-        // if found then return new Single with itself
-        // otherwise return itself without solution
+        // either solution is found or limit of search iterations is reached
         return Single.just(finder).toStage();
     }
 }
