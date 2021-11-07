@@ -10,6 +10,7 @@ import java.util.logging.Logger;
 import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
 
 import dev.machine.polish.helidon.sharedholiday.controllers.SharedHolidayController;
+import dev.machine.polish.helidon.sharedholiday.holidays.provider.HolidayDataProvider;
 import dev.machine.polish.helidon.sharedholiday.shared.SharedHolidaySearchProcessor;
 import io.helidon.common.http.Http;
 import io.helidon.config.Config;
@@ -93,7 +94,8 @@ public final class Main {
                 .addLiveness(HealthChecks.healthChecks())   // Adds a convenient set of checks
                 .build();
 
-        SharedHolidaySearchProcessor searchProcessor = new SharedHolidaySearchProcessor();
+        HolidayDataProvider holidayDataProvider = new HolidayDataProvider();
+        SharedHolidaySearchProcessor searchProcessor = new SharedHolidaySearchProcessor(2, holidayDataProvider);
 
         return Routing.builder()
                 .register(health)                   // Health at "/health"
